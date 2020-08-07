@@ -232,7 +232,6 @@ function toMaskImage(canvas, segmentation, video, img) {
 function segmentBodyInRealTime() {
   const canvas = document.getElementById('output');
   const img = document.getElementById('bg_img');
-  console.log(state.video);
 
   async function bodySegmentationFrame() {
     // segmentation
@@ -250,7 +249,9 @@ export async function bindPage() {
   document.getElementById('main').style.display = 'inline-block';
 
   let cameras = await getVideoInputs();
-  await loadVideo(cameras[0].label);
+  // OBS VirtualCam を除く
+  let cam = cameras.find(camera => camera.label.match(/^(?!OBS).*$/));
+  await loadVideo(cam.label);
 
   segmentBodyInRealTime();
 }
