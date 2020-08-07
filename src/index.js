@@ -1,7 +1,6 @@
 import "babel-polyfill";
 import * as bodyPix from '@tensorflow-models/body-pix';
-import * as tf from '@tensorflow/tfjs-core';
-import {toggleLoadingUI} from "./utils.js"
+import {isMobile, toggleLoadingUI} from "./utils.js"
 
 const state = {
   algorithm: 'multi-person-instance',
@@ -23,18 +22,6 @@ const segmentationOption = {
   multiDecodingNmsRadius: 20,
   multiDecodingNumKeypointForMatching: 17,
   multiDecodingRefineSteps: 10
-}
-
-function isAndroid() {
-  return /Android/i.test(navigator.userAgent);
-}
-
-function isiOS() {
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
-function isMobile() {
-  return isAndroid() || isiOS();
 }
 
 function getFacingMode(cameraLabel) {
