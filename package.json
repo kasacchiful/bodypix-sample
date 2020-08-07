@@ -27,5 +27,10 @@
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "@tensorflow-models/body-pix": "^2.0.5",
+    "@tensorflow/tfjs-converter": "^1.2.7",
+    "@tensorflow/tfjs-core": "^1.2.7"
   }
 }
