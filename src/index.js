@@ -3,7 +3,7 @@ import * as bodyPix from '@tensorflow-models/body-pix';
 import {isMobile, toggleLoadingUI} from "./utils.js"
 
 const state = {
-  algorithm: 'multi-person-instance',
+  algorithm: 'person',
   net: null,
   video: null,
   flipHorizontally: true,
@@ -155,47 +155,89 @@ async function estimateSegmentation() {
   return multiPersonSegmentation;
 }
 
-async function estimatePartSegmentation() {
-  switch (state.algorithm) {
-    case 'multi-person-instance':
-      return await state.net.segmentMultiPersonParts(state.video, {
-        internalResolution: segmentationOption.internalResolution,
-        segmentationThreshold: segmentationOption.segmentationThreshold,
-        maxDetections: segmentationOption.multiDecodingMaxDetections,
-        scoreThreshold: segmentationOption.multiDecodingScoreThreshold,
-        nmsRadius: segmentationOption.multiDecodingNmsRadius,
-        numKeypointForMatching:
-          segmentationOption.multiDecodingNumKeypointForMatching,
-        refineSteps: segmentationOption.multiDecodingRefineSteps
-      });
-    case 'person':
-      return await state.net.segmentPersonParts(state.video, {
-        internalResolution: segmentationOption.internalResolution,
-        segmentationThreshold: segmentationOption.segmentationThreshold,
-        maxDetections: segmentationOption.multiDecodingMaxDetections,
-        scoreThreshold: segmentationOption.multiDecodingScoreThreshold,
-        nmsRadius: segmentationOption.multiDecodingNmsRadius,
-      });
-    default:
-      break;
-  };
-  return multiPersonPartSegmentation;
+// async function estimatePartSegmentation() {
+//   switch (state.algorithm) {
+//     case 'multi-person-instance':
+//       return await state.net.segmentMultiPersonParts(state.video, {
+//         internalResolution: segmentationOption.internalResolution,
+//         segmentationThreshold: segmentationOption.segmentationThreshold,
+//         maxDetections: segmentationOption.multiDecodingMaxDetections,
+//         scoreThreshold: segmentationOption.multiDecodingScoreThreshold,
+//         nmsRadius: segmentationOption.multiDecodingNmsRadius,
+//         numKeypointForMatching:
+//           segmentationOption.multiDecodingNumKeypointForMatching,
+//         refineSteps: segmentationOption.multiDecodingRefineSteps
+//       });
+//     case 'person':
+//       return await state.net.segmentPersonParts(state.video, {
+//         internalResolution: segmentationOption.internalResolution,
+//         segmentationThreshold: segmentationOption.segmentationThreshold,
+//         maxDetections: segmentationOption.multiDecodingMaxDetections,
+//         scoreThreshold: segmentationOption.multiDecodingScoreThreshold,
+//         nmsRadius: segmentationOption.multiDecodingNmsRadius,
+//       });
+//     default:
+//       break;
+//   };
+//   return multiPersonPartSegmentation;
+// }
+
+function toMaskImage(canvas, segmentation, video, img) {
+  // canvasのサイズをvideoと同じにする
+  canvas.width = video.width;
+  canvas.height = video.height;
+
+  // video画像抽出用にcanvas作成
+  const fgcanvas = document.createElement('canvas');
+  fgcanvas.width = video.width;
+  fgcanvas.height = video.height;
+  const ctxVideo = fgcanvas.getContext('2d');
+  ctxVideo.drawImage(video, 0, 0);
+  const fgImg = ctxVideo.getImageData(0, 0, canvas.width, canvas.height);
+
+  // background image画像抽出用にcanvas作成
+  const bgcanvas = document.createElement('canvas');
+  bgcanvas.width = video.width;
+  bgcanvas.height = video.height;
+  const ctxBg = bgcanvas.getContext('2d');
+  // 背景画像をcanvasと同じサイズにする
+  ctxBg.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+  const bgImg = ctxBg.getImageData(0, 0, canvas.width, canvas.height);
+
+  // 描画
+  const ctx = canvas.getContext('2d');
+  let ctxImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let bytes = ctxImageData.data;
+  for (let i = 0; i < canvas.height; i++) {
+    for (let j = 0; j < canvas.width; j++) {
+      const n = i * canvas.width + j;
+      if (segmentation.data[n] === 1) {
+        // for foreground (人)
+        bytes[4 * n + 0] = fgImg.data[4 * n + 0];
+        bytes[4 * n + 1] = fgImg.data[4 * n + 1];
+        bytes[4 * n + 2] = fgImg.data[4 * n + 2];
+        bytes[4 * n + 3] = fgImg.data[4 * n + 3];  
+      } else {
+        // for background (背景)
+        bytes[4 * n + 0] = bgImg.data[4 * n + 0];
+        bytes[4 * n + 1] = bgImg.data[4 * n + 1];
+        bytes[4 * n + 2] = bgImg.data[4 * n + 2];
+        bytes[4 * n + 3] = bgImg.data[4 * n + 3];  
+      }
+    }
+  }
+  ctx.putImageData(ctxImageData, 0, 0);
 }
 
 function segmentBodyInRealTime() {
   const canvas = document.getElementById('output');
+  const img = document.getElementById('bg_img');
+  console.log(state.video);
 
   async function bodySegmentationFrame() {
     // segmentation
-    const multiPersonSegmentation = await estimateSegmentation();
-    const ctx = canvas.getContext('2d');
-    const foregroundColor = {r: 255, g: 255, b: 255, a: 255};
-    const backgroundColor = {r: 0, g: 0, b: 0, a: 255};
-    const mask = bodyPix.toMask(
-      multiPersonSegmentation, foregroundColor, backgroundColor, true);
-    bodyPix.drawMask(
-      canvas, state.video, mask, state.opacity,
-      state.maskBlurAmount, state.flipHorizontally);
+    const personSegmentation = await estimateSegmentation();
+    toMaskImage(canvas, personSegmentation, state.video, img);
 
     requestAnimationFrame(bodySegmentationFrame);
   }
