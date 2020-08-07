@@ -6,7 +6,8 @@
   "scripts": {
     "build": "webpack --config=webpack.config.js",
     "watch": "webpack -w --config=webpack.config.js",
-    "serve": "webpack -w --config=webpack.config.js & webpack-dev-server"
+    "serve": "webpack -w --config=webpack.config.js & webpack-dev-server",
+    "deploy": "netlify deploy --dir dist"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
     "babel-loader": "^8.1.0",
     "babel-polyfill": "^6.26.0",
     "copy-webpack-plugin": "^6.0.3",
+    "netlify-cli": "^2.59.0",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"

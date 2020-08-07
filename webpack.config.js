@@ -29,7 +29,15 @@ module.exports = {
           to: ".",
         },
       ],
-    })
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "src/bg.jpg",
+          to: ".",
+        },
+      ],
+    }),
   ],
   devServer: {
     contentBase: "dist",
