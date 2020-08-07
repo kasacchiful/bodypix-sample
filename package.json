@@ -1,0 +1,36 @@
+{
+  "name": "bodypix-sample",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config=webpack.config.js",
+    "watch": "webpack -w --config=webpack.config.js",
+    "serve": "webpack -w --config=webpack.config.js & webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kasacchiful/bodypix-sample.git"
+  },
+  "author": "kasacchiful",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/kasacchiful/bodypix-sample/issues"
+  },
+  "homepage": "https://github.com/kasacchiful/bodypix-sample#readme",
+  "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/preset-env": "^7.11.0",
+    "babel-loader": "^8.1.0",
+    "babel-polyfill": "^6.26.0",
+    "copy-webpack-plugin": "^6.0.3",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "@tensorflow-models/body-pix": "^2.0.5",
+    "@tensorflow/tfjs-converter": "^1.2.7",
+    "@tensorflow/tfjs-core": "^1.2.7"
+  }
+}
